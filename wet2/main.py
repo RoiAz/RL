@@ -34,8 +34,7 @@ def hit_prob_lose(old_state):
         return 0
     elif old_state == 21:
         return 1
-    else:
-        raise Exception("Illegal old state: " + str(old_state) + " in hit_prob_lose")
+    return 0
 
 
 def hit_prob(old_state, new_state):
@@ -47,8 +46,7 @@ def hit_prob(old_state, new_state):
         return 0
     elif LOWEST_CARD < new_state <= MAX_BJ_SUM and new_state > old_state + 1:
         return hit_prob_smaller_eq_max(old_state, new_state)
-    else:
-        raise Exception("Illegal old state: " + str(old_state) + " in hit_prob")
+    return 0
 
 
 card_to_val = {i: i for i in range(LOWEST_CARD, HIGHEST_CARD)}
@@ -70,8 +68,7 @@ def accumulate_prob(curr_dealer_val, k):
         for i in range(LOWEST_CARD, HIGHEST_CARD + 1):
             val += (1.0 / 13.0) * accumulate_prob(curr_dealer_val + card_to_val[i], k - card_to_val[i])
         return val
-    else:
-        raise Exception("Illegal k: " + str(k) + " in accumulate_prob")
+    return 0
 
 
 def sticks_prob(player_state, dealer_card, new_state):
@@ -117,6 +114,7 @@ def get_reward(curr_state):
 
 def value_iteration(dealer_card):
     policy = {}
+    last_iter = NUM_OF_ITER - 1
     states_value = {i: 0 for i in range(LOWEST_CARD, MAX_BJ_SUM + 4)}
     for i in range(NUM_OF_ITER):
         temp_values = {i: 0 for i in range(LOWEST_CARD, MAX_BJ_SUM + 4)}
@@ -129,7 +127,8 @@ def value_iteration(dealer_card):
                     # print(sticks_prob(curr_state, dealer_card, new_state))
                     hits_val += hit_prob(curr_state, new_state) * states_value[new_state]
                     sticks_val += sticks_prob(curr_state, dealer_card, new_state) * states_value[new_state]
-                policy[curr_state] = HITS if hits_val > sticks_val else STICKS
+                if i == last_iter:
+                    policy[curr_state] = HITS if hits_val > sticks_val else STICKS
             temp_values[curr_state] = max(hits_val, sticks_val)
         # print (states_value)
 
